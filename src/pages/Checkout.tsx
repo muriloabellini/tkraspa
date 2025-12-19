@@ -155,12 +155,12 @@ function Checkout() {
                   
                   {/* Selector de quantidade */}
                   <div className="flex items-center gap-[1px] bg-gray-100 rounded px-2 py-1">
-                    <button className="text-gray-700 hover:text-gray-900 font-bold text-sm border-r border-gray-300 pr-2">
+                    <button className="text-gray-300 hover:text-gray-300 font-bold text-sm border-r border-gray-300 pr-2">
   –
 </button>
 
                     <span className="font-medium text-gray-800 mx-1 text-sm" style={{ color: '#374151' }}>1</span>
-                    <button className="text-gray-700 hover:text-gray-900 font-bold text-sm border-l border-gray-300 pl-2">
+                    <button className="text-gray-300 hover:text-gray-300 font-bold text-sm border-l border-gray-300 pl-2">
   +
 </button>
 
