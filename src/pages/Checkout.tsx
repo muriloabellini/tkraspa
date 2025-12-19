@@ -137,7 +137,7 @@ function Checkout() {
 
                 {/* Preços com selector */}
                 <div className="flex items-center justify-between ">
-                  <div className="flex flex-col gap-[1px]">
+                  <div className="flex flex-col gap-[1px] ">
                     <div className="flex items-center ">
                       <span className="text-base font-extrabold text-[#E11D48]" style={{ fontSize: '14px' }}>
                         R$ 00,00
@@ -154,8 +154,8 @@ function Checkout() {
                   </div>
                   
                   {/* Selector de quantidade */}
-                  <div className="flex items-center gap-[1px] bg-gray-100 rounded px-2 py-1">
-                    <button className="text-gray-300 hover:text-gray-300 font-bold text-sm border-r border-gray-300 pr-2">
+                  <div className="flex items-center gap-[1px] bg-gray-100 rounded px-2 py-1 ">
+                    <button className="text-gray-300 hover:text-gray-300 font-bold text-sm border-r border-gray-300 pr-2 ">
   –
 </button>
 
@@ -172,13 +172,13 @@ function Checkout() {
 
           {/* Desconto TikTok Shop - COM BORDAS QUE SAEM 100% */}
           <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen py-2 my-2 border-y-8 border-gray-200">
-            <div className="max-w-md mx-auto px-4">
+            <div className="max-w-md mx-auto px-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  className="w-4 h-4 text-[#ED2549]"
+                  className="w-4 h-4 text-[#ED2549] ml-[-9px] "
                   fill="none"
                 >
                   {/* Contorno */}
@@ -207,14 +207,14 @@ function Checkout() {
                 </svg>
 
                   <span
-                    className="text-xs font-bold text-gray-800"
+                    className="text-xs font-bold text-gray-800 ml-[-6px]"
                     style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
                   >
                     Desconto do TikTok Shop
                   </span>
                 </div>
                 <span
-                  className="px-2 py-0.5 bg-pink-100 text-[#E11D48] text-xs font-extrabold rounded"
+                  className="px-2 py-0.5 bg-pink-100 text-[#E11D48] text-xs font-extrabold rounded "
                   style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
                 >
                   - 100%
@@ -233,7 +233,7 @@ function Checkout() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="font-extrabold text-sm text-gray-900">Subtotal do produto</span>
-              <span className=" font-extrabold text-sm text-gray-600 mr-4">R$ 00,00</span>
+              <span className=" font-extrabold text-sm text-gray-600 mr-2">R$ 00,00</span>
             </div>
           
             <div className="p-2 ">
@@ -278,7 +278,7 @@ function Checkout() {
         </div>
 
         {/* Total */}
-        <div className="flex justify-between items-center mb-1 p-2 flex-shrink-0">
+        <div className="flex justify-between items-center mb-1 p-1 flex-shrink-0">
           <span className="text-base font-bold text-gray-900" style={{ fontSize: '16px' }} >Total (1 item)</span>
           <span className="text-lg font-bold text-[#E11D48]" style={{ fontSize: '16px' }}>
             R$ 00,00

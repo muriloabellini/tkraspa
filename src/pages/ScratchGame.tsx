@@ -855,6 +855,7 @@ const ScratchGame = () => {
               </div>
             </div>
           </div>
+
         </div>
 
         {/* Modal de Perda */}
@@ -938,6 +939,7 @@ const ScratchGame = () => {
       </div>
 
       <style>{`
+
         @media (max-width: 320px) {
           .max-w-md {
             max-width: 95%;
