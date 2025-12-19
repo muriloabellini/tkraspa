@@ -14,7 +14,7 @@ const Landing = () => {
       <div className="min-h-screen flex flex-col ">
        
         <main 
-          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-20px] pb-8 relative"
+          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-120px] pb-8 relative"
           style={{
             backgroundImage: `url(${fundoImg})`,
             backgroundSize: 'cover',
@@ -32,7 +32,7 @@ const Landing = () => {
             </h1>
             
             <p className="text-lg md:text-xl font-semibold leading-relaxed text-foreground px-2 animate-in fade-in slide-in-from-bottom duration-700 delay-150">
-              Você ganhou <span className="text-tiktok-cyan font-bold">3 raspadinhas grátis</span> para montar sua Caixa Premiada com produtos exclusivos
+              Você recebeu <span className="text-tiktok-cyan font-bold">3 raspadinhas </span> para ganhar produtos 100% de graça
             </p>
             
             <div className="py-6 animate-in zoom-in duration-700 delay-300">
@@ -42,7 +42,11 @@ const Landing = () => {
                 className="w-64 md:w-72 h-auto drop-shadow-2xl animate-float"
               />
             </div>
-            
+
+             <p className="text-lg md:text-xl font-semibold leading-relaxed text-foreground px-2 animate-in fade-in slide-in-from-bottom duration-700 delay-150">
+              Clique no botão abaixo para resgatar suas raspadinhas
+            </p>
+
             <Button
               onClick={() => navigate("/scratch-game")}
               size="lg"

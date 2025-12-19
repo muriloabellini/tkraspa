@@ -6,6 +6,8 @@ import scratchOverlayImg from "@/assets/scratch-overlay.png";
 import { useNavigate } from "react-router-dom";
 import { Confetti } from "@/components/Confetti";
 import winSound from "@/assets/som.mp3";
+import scratchSound from "@/assets/raspa.mp3";
+import loseSound from "@/assets/perdeu.mp3";
 
 const prizes = [
   { id: 1, name: "iPhone 17 Pro Max", image: "/images/1.png" },
@@ -24,6 +26,14 @@ const prizes = [
   { id: 14, name: "iPhone 15", image: "/images/14.png" },
   { id: 15, name: "JBL Quantum 910", image: "/images/15.png" },
   { id: 16, name: "Macbook Pro", image: "/images/16.png" },
+  { id: 17, name: "Microfone Gamer com RGB", image: "/images/17.png" },
+  { id: 18, name: "Mouse Gamer Razer", image: "/images/18.png" },
+  { id: 19, name: "Fone JBL Mini", image: "/images/19.png" },
+  { id: 20, name: "Mini Ventilador Portátil", image: "/images/20.png" },
+  { id: 21, name: "Caixa de Som Portátil Alexa", image: "/images/21.png" },
+  { id: 22, name: "Carregador USB-C", image: "/images/22.png" },
+  { id: 23, name: "Teclado Gamer Razer", image: "/images/23.png" },
+  { id: 24, name: "Webcam Full HD Logitech", image: "/images/24.png" },
 ];
 
 const ScratchGame = () => {
@@ -45,10 +55,25 @@ const ScratchGame = () => {
   const overlayImageRef = useRef<HTMLImageElement | null>(null);
   const lastProgressCheck = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const scratchAudioRef = useRef<HTMLAudioElement | null>(null);
+  const loseAudioRef = useRef<HTMLAudioElement | null>(null);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
   });
+
+  // Prevenir scroll quando modais estão abertas
+  useEffect(() => {
+    if (showWinModal || showLoseModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showWinModal, showLoseModal]);
 
   // Carregar a imagem de overlay
   useEffect(() => {
@@ -78,16 +103,35 @@ const ScratchGame = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Inicializar áudio
+  // Inicializar áudios
   useEffect(() => {
+    // Áudio de vitória
     audioRef.current = new Audio(winSound);
     audioRef.current.volume = 0.7;
     audioRef.current.preload = "auto";
+    
+    // Áudio de raspagem
+    scratchAudioRef.current = new Audio(scratchSound);
+    scratchAudioRef.current.volume = 0.5;
+    scratchAudioRef.current.preload = "auto";
+    
+    // Áudio de perda
+    loseAudioRef.current = new Audio(loseSound);
+    loseAudioRef.current.volume = 0.7;
+    loseAudioRef.current.preload = "auto";
     
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
+      }
+      if (scratchAudioRef.current) {
+        scratchAudioRef.current.pause();
+        scratchAudioRef.current = null;
+      }
+      if (loseAudioRef.current) {
+        loseAudioRef.current.pause();
+        loseAudioRef.current = null;
       }
     };
   }, []);
@@ -97,10 +141,30 @@ const ScratchGame = () => {
     if (showWinModal && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(error => {
-        console.log("Erro ao reproduzir áudio:", error);
+        console.log("Erro ao reproduzir áudio de vitória:", error);
       });
     }
   }, [showWinModal]);
+
+  // Tocar som quando a modal de perda for exibida
+  useEffect(() => {
+    if (showLoseModal && loseAudioRef.current) {
+      loseAudioRef.current.currentTime = 0;
+      loseAudioRef.current.play().catch(error => {
+        console.log("Erro ao reproduzir áudio de perda:", error);
+      });
+    }
+  }, [showLoseModal]);
+
+  // Função para tocar som de raspagem
+  const playScratchSound = useCallback(() => {
+    if (scratchAudioRef.current) {
+      scratchAudioRef.current.currentTime = 0;
+      scratchAudioRef.current.play().catch(error => {
+        console.log("Erro ao reproduzir áudio de raspagem:", error);
+      });
+    }
+  }, []);
 
   // Função centralizada para avançar rodada
   const advanceRound = useCallback(() => {
@@ -118,9 +182,9 @@ const ScratchGame = () => {
     if (round === 0 || round === 1) {
       // Rodadas de perda - apenas imagens diferentes
       const losingImages = [
-        "/images/1.png", "/images/3.png", "/images/4.png",
+        "/images/12.png", "/images/3.png", "/images/4.png",
         "/images/5.png", "/images/6.png", "/images/7.png",
-        "/images/8.png", "/images/9.png", "/images/10.png"
+        "/images/18.png", "/images/9.png", "/images/20.png"
       ];
       
       const positions = [...losingImages];
@@ -147,8 +211,8 @@ const ScratchGame = () => {
       
       // Preencher o resto com imagens diferentes
       const otherImages = [
-        "/images/1.png", "/images/3.png", "/images/4.png",
-        "/images/5.png", "/images/6.png", "/images/7.png"
+        "/images/21.png", "/images/11.png", "/images/4.png",
+        "/images/18.png", "/images/22.png", "/images/7.png"
       ];
       
       let otherIndex = 0;
@@ -318,8 +382,12 @@ const ScratchGame = () => {
     
     e.preventDefault();
     setIsScratching(true);
+    
+    // Tocar som de raspagem
+    playScratchSound();
+    
     scratchAtPosition(e);
-  }, [gameStarted, isCanvasBlocked, attempts, currentRound, isScratching, showWinModal, showLoseModal, overlayLoaded]);
+  }, [gameStarted, isCanvasBlocked, attempts, currentRound, isScratching, showWinModal, showLoseModal, overlayLoaded, playScratchSound]);
 
   const handleScratchMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!gameStarted || isCanvasBlocked || !isScratching || showWinModal || showLoseModal || !overlayLoaded) return;
@@ -439,7 +507,10 @@ const ScratchGame = () => {
     
     setTimeout(() => {
       setShowWinModal(true);
-      setShowConfetti(false);
+      // Continuar mostrando o confete por 2 segundos após exibir a modal
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 2000);
     }, 1500);
   }, []);
 
@@ -715,8 +786,7 @@ const ScratchGame = () => {
                     Reúna 3 imagens iguais e conquiste seu prêmio!
                   </p>
                   <p className="text-[#1A1A1A] leading-tight tracking-tight text-justify">
-                    O prêmio correspondente será automaticamente adicionado na sua Caixa Premiada. 
-                    Ao completar as três raspadinhas, você pode adquirir sua Caixa!
+                    O prêmio correspondente será automaticamente adicionado na sua Caixa Premiada. Complete as três raspadinhas e resgate seu prêmio 100% de graça
                   </p>
                 </div>
               </div>
@@ -743,10 +813,10 @@ const ScratchGame = () => {
                 </h3>
 
                 <p
-                  className="text-gray-600 text-center mb-4"
+                  className="text-gray-600 text-center mb-4 p-2"
                   style={{ fontSize: responsiveSizes.fontSize.base }}
                 >
-                  A cada rodada você tem a chance de adquirir um desses produtos{" "}
+                  Você tem a chance de ganhar DE GRAÇA um desses produtos a cada raspadinha{" "}
                   <strong className="text-[#ff3c5c]">100% de GRAÇA!</strong>
                 </p>
 
@@ -800,8 +870,12 @@ const ScratchGame = () => {
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">
                     Não foi dessa vez
                   </h3>
-                  <p className="text-gray-600 mb-4">
-                    Você ainda tem {attempts - 1} tentativas disponíveis! Tente novamente clicando no botão abaixo.
+                  <p className="text-gray-600 mb-2">
+                    Você ainda tem {attempts - 1} tentativas disponíveis!
+                  </p>
+
+                   <p className="text-gray-600 mb-4">
+                    Tente novamente clicando no botão abaixo.
                   </p>
                   
                   <Button
@@ -819,16 +893,22 @@ const ScratchGame = () => {
         {/* Modal de Vitória */}
         {showWinModal && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            {/* Confetti continua por 2 segundos na modal */}
+            {showConfetti && <Confetti />}
+            
             <div className="bg-white rounded-2xl w-full max-w-sm mx-auto overflow-hidden">
               <div className="p-6 pt-0">
+                 <br>
+                  </br>
+                  <br></br>
                 <div className="flex items-center justify-center my-4">
                   <span className="text-3xl mr-2">🎁</span>
                   <span className="text-3xl text-[#ff3c5c] font-extrabold">Parabéns!</span>
                 </div>
 
                 <div className="text-center mb-6">
-                  <div className="mb-4">
-                    <p className="text-[#ff3c5c] font-bold mb-2 text-lg">
+                  <div className="mb-2">
+                    <p className="text-[#ff3c5c] font-bold text-lg">
                       Você ganhou um
                     </p>
                     <div className="bg-white text-black font-bold py-2 px-4 rounded-lg inline-block">
@@ -839,7 +919,7 @@ const ScratchGame = () => {
                   <img 
                     src="/images/jbl.png" 
                     alt="JBL Boombox"
-                    className="w-30 h-30 mx-auto mb-6 object-contain"
+                    className="w-28 h-28 mx-auto mb-6 object-contain"
                   />
                 </div>
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingBag, Star, Tag, TruckIcon, CreditCard } from 'lucide-react';
 
 function Checkout() {
-  const [timeLeft, setTimeLeft] = useState(10 * 3600 + 48 * 60 + 27); // 10:48:27
+  const [timeLeft, setTimeLeft] = useState(5 * 60); // 5:00
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -175,14 +175,37 @@ function Checkout() {
             <div className="max-w-md mx-auto px-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4 text-[#ED2549]"
-                    fill="currentColor"
-                  >
-                    <path d="M20 12c0-1.1.9-2 2-2V6c0-1.1-.9-2-2-2H4C2.9 4 2 4.9 2 6v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2z" />
-                  </svg>
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="w-4 h-4 text-[#ED2549]"
+                  fill="none"
+                >
+                  {/* Contorno */}
+                  <path
+                    d="M20 12c0-1.1.9-2 2-2V6
+                      c0-1.1-.9-2-2-2H4
+                      C2.9 4 2 4.9 2 6v4
+                      c1.1 0 2 .9 2 2s-.9 2-2 2v4
+                      c0 1.1.9 2 2 2h16
+                      c1.1 0 2-.9 2-2v-4
+                      c-1.1 0-2-.9-2-2z"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* Check */}
+                  <path
+                    d="M8 12.5l2.2 2.2L16 9"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
                   <span
                     className="text-xs font-bold text-gray-800"
                     style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
@@ -210,7 +233,7 @@ function Checkout() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="font-extrabold text-sm text-gray-900">Subtotal do produto</span>
-              <span className=" font-extrabold text-sm text-gray-600 ">R$ 00,00</span>
+              <span className=" font-extrabold text-sm text-gray-600 mr-4">R$ 00,00</span>
             </div>
           
             <div className="p-2 ">
@@ -273,9 +296,9 @@ function Checkout() {
         </div>
 
         {/* Frete */}
-       <div className="flex mb-2 items-center gap-2  p-2 rounded-lg flex-shrink-0">
+       <div className="flex mb-2 items-center gap-2  p-2 rounded-lg flex-shrink-0 ml-10">
           <TruckIcon className="w-4 h-4 text-red-500" />
-          <div className="flex items-center text-xs text-gray-700">
+          <div className="flex items-center text-xs text-gray-700 ">
             Calcule o seu frete clicando no botão abaixo
           </div>
         </div>
@@ -293,7 +316,7 @@ function Checkout() {
           >
             Fazer pedido
             <div className="text-xs font-normal text-pink-100 mt-1">
-              Desconto da Raspadinha termina em {formatTime(timeLeft)}
+              Seu prêmio se expira em {formatTime(timeLeft)}
             </div>
           </button>
     
