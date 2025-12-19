@@ -60,45 +60,38 @@ function Checkout() {
             </span>
           </div>
           
-          {/* Linha divisória colorida tracejada */}
-          <div 
-            className="w-full mb-2 relative"
-            style={{
-              height: '1.5px',
-              backgroundColor: 'white',
-              backgroundImage: `repeating-linear-gradient(
-                to right,
-                #ce3854 0px,
-                #ce3854 20px,
-                transparent 15px,
-                transparent 35px,
-                #42ecea 40px,
-                #42ecea 55px,
-                transparent 50px,
-                transparent 70px
-              )`,
-              backgroundSize: '70px 100%',
-            }}
-          />
+   <div
+  className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-2"
+  style={{
+    width: '100vw',
+    height: '15px',
+    backgroundImage: "url('/images/gradi.jpg')",
+    backgroundRepeat: 'repeat-x',
+    backgroundSize: 'auto 100%',
+    backgroundPosition: 'center',
+  }}
+/>
+
         </header>
 
         {/* Produto - Raspadinha */}
         <section className="mb-2 flex-shrink-0">
-          <div className="mb-1">
+          <div className="mb-3">
             <h2 className="text-base font-bold text-black" style={{ fontSize: '15px' }}>
               Raspadinha TikTok Shop
             </h2>
-            <div className="flex items-center gap-1 mt-0.5">
+           
+          </div>
+           <div className="flex items-center gap-1 mt-0.5">
               <Star className="w-3.5 h-3.5 text-[#b27e09] fill-[#b27e09]" />
               <span className="text-xs font-medium text-[#b27e09]" style={{ fontSize: '11px' }}>
                 Melhor escolha! 549 unidades resgatadas hoje
               </span>
             </div>
-          </div>
 
           {/* Card do produto */}
-          <div className="bg-white p-1 mb-1">
-            <div className="flex items-start gap-3">
+          <div className="bg-white p-3 mb-1">
+            <div className="flex items-start gap-2">
               {/* Imagem do produto */}
               <div className="flex-shrink-0">
                 <img
@@ -111,7 +104,7 @@ function Checkout() {
               {/* Informações do produto */}
               <div className="flex-1 min-w-0">
                 {/* Nome do Produto */}
-                <h3 className="font-semibold text-gray-600 text-sm" style={{ fontSize: '13px', lineHeight: '1.3' }}>
+                <h3 className="font-semibold text-gray-600 text-sm" style={{ fontSize: '13px', lineHeight: '0.5' }}>
                   Caixa De Som Boombox 3 Bluetooth
                 </h3>
 
@@ -124,7 +117,7 @@ function Checkout() {
                 </div>
 
                 {/* Devolução gratuita */}
-                <div className="inline-flex items-center px-1 py-0.5 bg-gray-100 rounded-md ">
+                <div className="inline-flex items-center px-1 py-[2px] bg-gray-100 rounded-md ">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -144,14 +137,14 @@ function Checkout() {
 
                 {/* Preços com selector */}
                 <div className="flex items-center justify-between ">
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-col gap-[1px]">
+                    <div className="flex items-center ">
                       <span className="text-base font-extrabold text-[#E11D48]" style={{ fontSize: '14px' }}>
                         R$ 00,00
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-[1px]">
                       <span className="text-xs text-gray-400 line-through">R$ 2.849,05</span>
                       <span className="px-1 py-0.5 bg-red-100 text-[#E11D48] text-xs font-extrabold rounded"
                         style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '10px' }}>
@@ -161,7 +154,7 @@ function Checkout() {
                   </div>
                   
                   {/* Selector de quantidade */}
-                  <div className="flex items-center gap-2 bg-gray-100 rounded px-2 py-1">
+                  <div className="flex items-center gap-[1px] bg-gray-100 rounded px-2 py-1">
                     <button className="text-gray-700 hover:text-gray-900 font-bold text-sm border-r border-gray-300 pr-2">
   –
 </button>
@@ -179,7 +172,7 @@ function Checkout() {
 
           {/* Desconto TikTok Shop - COM BORDAS QUE SAEM 100% */}
           <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen py-2 my-2 border-y-8 border-gray-200">
-            <div className="max-w-md mx-auto px-2">
+            <div className="max-w-md mx-auto px-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <svg
@@ -192,16 +185,16 @@ function Checkout() {
                   </svg>
                   <span
                     className="text-xs font-bold text-gray-800"
-                    style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '12px' }}
+                    style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
                   >
                     Desconto do TikTok Shop
                   </span>
                 </div>
                 <span
                   className="px-2 py-0.5 bg-pink-100 text-[#E11D48] text-xs font-extrabold rounded"
-                  style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '11px' }}
+                  style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
                 >
-                  -100%
+                  - 100%
                 </span>
               </div>
             </div>
@@ -210,24 +203,26 @@ function Checkout() {
 
         {/* Resumo do pedido */}
         <section className="mb-3 flex-shrink-0">
-          <h2 className="text-base font-bold text-black mb-1" style={{ fontSize: '15px' }}>
+          <h2 className="text-base font-bold text-black mb-3" style={{ fontSize: '15px' }}>
             Resumo do pedido
           </h2>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="font-semibold text-xs text-gray-700">Subtotal do produto</span>
-              <span className=" font-semibold text-xs text-gray-400 ">R$ 00,00</span>
+              <span className="font-extrabold text-sm text-gray-900">Subtotal do produto</span>
+              <span className=" font-extrabold text-sm text-gray-600 ">R$ 00,00</span>
+            </div>
+          
+            <div className="p-2 ">
+            <div className="flex justify-between mb-2">
+              <span className="font-semibold text-xs text-gray-900">Preço Original</span>
+              <span className="font-semibold text-xs text-gray-600 line-through">R$ 2.849,05</span>  
             </div>
             
-            <div className="flex justify-between">
-              <span className="text-xs text-gray-700">Preço Original</span>
-              <span className="text-xs text-gray-400 line-through">R$ 2.849,05</span>
+            <div className="flex justify-between ">
+              <span className=" font-semibold text-xs text-gray-900">Desconto da Raspadinha</span>
+              <span className="font-semibold text-xs font-medium text-red-600">- R$ 2.849,05</span>
             </div>
-            
-            <div className="flex justify-between">
-              <span className="text-xs text-gray-700">Desconto da Raspadinha</span>
-              <span className="text-xs font-medium text-red-500">- R$ 2.849,05</span>
             </div>
           </div>
         </section>
@@ -261,8 +256,8 @@ function Checkout() {
 
         {/* Total */}
         <div className="flex justify-between items-center mb-1 p-2 flex-shrink-0">
-          <span className="text-base font-bold text-gray-900" style={{ fontSize: '14px' }} >Total (1 item)</span>
-          <span className="text-lg font-bold text-[#E11D48]" style={{ fontSize: '14px' }}>
+          <span className="text-base font-bold text-gray-900" style={{ fontSize: '16px' }} >Total (1 item)</span>
+          <span className="text-lg font-bold text-[#E11D48]" style={{ fontSize: '16px' }}>
             R$ 00,00
           </span>
         </div>
