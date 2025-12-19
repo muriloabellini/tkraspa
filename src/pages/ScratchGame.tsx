@@ -816,8 +816,8 @@ const ScratchGame = () => {
                   className="text-gray-600 text-center mb-4 p-2"
                   style={{ fontSize: responsiveSizes.fontSize.base }}
                 >
-                  Você tem a chance de ganhar DE GRAÇA um desses produtos a cada raspadinha{" "}
-                  <strong className="text-[#ff3c5c]">100% de GRAÇA!</strong>
+                  Você tem a chance de ganhar <strong className="text-[#ff3c5c]">DE GRAÇA </strong>um desses produtos a cada raspadinha{" "}
+                  
                 </p>
 
                 {/* Grid com scroll */}
@@ -900,7 +900,7 @@ const ScratchGame = () => {
               <div className="p-6 pt-0">
                  <br>
                   </br>
-                  <br></br>
+                 
                 <div className="flex items-center justify-center my-4">
                   <span className="text-3xl mr-2">🎁</span>
                   <span className="text-3xl text-[#ff3c5c] font-extrabold">Parabéns!</span>
@@ -917,10 +917,10 @@ const ScratchGame = () => {
                   </div>
                   
                   <img 
-  src="/images/jbl.png" 
-  alt="JBL Boombox"
-  className="w-[206px] h-[126px] mx-auto mb-6 "
-/>
+                  src="/images/jbl.png" 
+                  alt="JBL Boombox"
+                  className="w-[206px] h-[126px] mx-auto mb-6 "
+                />
                 </div>
 
                 <div className="space-y-3">
