@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import fundoImg from "@/assets/fundo.png";
 import scratchOverlayImg from "@/assets/scratch-overlay.png";
@@ -40,6 +40,7 @@ const ScratchGame = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [isCanvasBlocked, setIsCanvasBlocked] = useState(true);
   const [shouldAutoStart, setShouldAutoStart] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayImageRef = useRef<HTMLImageElement | null>(null);
   const lastProgressCheck = useRef<number>(0);
@@ -54,14 +55,13 @@ const ScratchGame = () => {
     const img = new Image();
     img.src = scratchOverlayImg;
     img.onload = () => {
+      console.log("Overlay carregado com sucesso");
       overlayImageRef.current = img;
       setOverlayLoaded(true);
-      // Inicializar canvas após carregar overlay
-      setTimeout(() => {
-        if (canvasRef.current) {
-          initializeCanvas();
-        }
-      }, 100);
+    };
+    img.onerror = () => {
+      console.error("Erro ao carregar overlay");
+      setOverlayLoaded(false);
     };
   }, []);
 
@@ -82,6 +82,7 @@ const ScratchGame = () => {
   useEffect(() => {
     audioRef.current = new Audio(winSound);
     audioRef.current.volume = 0.7;
+    audioRef.current.preload = "auto";
     
     return () => {
       if (audioRef.current) {
@@ -101,8 +102,19 @@ const ScratchGame = () => {
     }
   }, [showWinModal]);
 
+  // Função centralizada para avançar rodada
+  const advanceRound = useCallback(() => {
+    setAttempts(prev => {
+      const newAttempts = prev - 1;
+      if (newAttempts > 0) {
+        setCurrentRound(prevRound => prevRound + 1);
+      }
+      return newAttempts;
+    });
+  }, []);
+
   // Gerar cartas da raspadinha - Sempre perde nas 2 primeiras, ganha na terceira
-  const generateScratchCards = (round: number) => {
+  const generateScratchCards = useCallback((round: number) => {
     if (round === 0 || round === 1) {
       // Rodadas de perda - apenas imagens diferentes
       const losingImages = [
@@ -155,11 +167,12 @@ const ScratchGame = () => {
       
       return positions;
     }
-  };
+  }, []);
 
   // Inicializar cartas da raspadinha quando o round mudar
   useEffect(() => {
     if (currentRound >= 0 && currentRound <= 2) {
+      console.log("Iniciando rodada:", currentRound);
       const newScratchCards = generateScratchCards(currentRound);
       setScratchCards(newScratchCards);
       
@@ -168,30 +181,36 @@ const ScratchGame = () => {
       setIsCanvasBlocked(true);
       setScratchProgress(0);
       setIsScratching(false);
+      setIsInitializing(true);
       
-      // Inicializar canvas após um breve delay
+      // Pequeno delay para garantir que o DOM foi atualizado
       setTimeout(() => {
         if (overlayLoaded && canvasRef.current) {
           initializeCanvas();
+          setIsInitializing(false);
+        } else {
+          console.log("Aguardando overlay carregar para rodada", currentRound);
+          setIsInitializing(true);
         }
-      }, 300);
+      }, 100);
     }
-  }, [currentRound, overlayLoaded]);
+  }, [currentRound, overlayLoaded, generateScratchCards]);
 
   // Se shouldAutoStart for true, iniciar o jogo automaticamente
   useEffect(() => {
-    if (shouldAutoStart && overlayLoaded) {
+    if (shouldAutoStart && overlayLoaded && !isInitializing) {
+      console.log("Iniciando jogo automaticamente após modal de perda");
       handleStartGame();
       setShouldAutoStart(false);
     }
-  }, [shouldAutoStart, overlayLoaded]);
+  }, [shouldAutoStart, overlayLoaded, isInitializing]);
 
   // Calcular tamanhos responsivos
-  const getResponsiveSizes = () => {
+  const getResponsiveSizes = useCallback(() => {
     if (windowSize.width < 375) {
       return {
-        canvasSize: windowSize.width - 40, // Ajustado para largura total
-        containerWidth: windowSize.width - 32, // Igual aos outros cards
+        canvasSize: windowSize.width - 40,
+        containerWidth: windowSize.width - 32,
         fontSize: {
           small: '0.7rem',
           base: '0.8rem',
@@ -202,8 +221,8 @@ const ScratchGame = () => {
       };
     } else if (windowSize.width < 640) {
       return {
-        canvasSize: 400, // Largura fixa para tablets
-        containerWidth: '400px', // Igual aos outros cards
+        canvasSize: 400,
+        containerWidth: '400px',
         fontSize: {
           small: '0.75rem',
           base: '0.9rem',
@@ -214,8 +233,8 @@ const ScratchGame = () => {
       };
     } else {
       return {
-        canvasSize: 420, // Largura fixa para desktop
-        containerWidth: '420px', // Igual aos outros cards
+        canvasSize: 420,
+        containerWidth: '420px',
         fontSize: {
           small: '0.8rem',
           base: '1rem',
@@ -225,12 +244,12 @@ const ScratchGame = () => {
         cardHeight: '200px'
       };
     }
-  };
+  }, [windowSize.width]);
 
   const responsiveSizes = getResponsiveSizes();
 
   // Inicializar canvas para raspadinha com overlay
-  const initializeCanvas = () => {
+  const initializeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !overlayImageRef.current) {
       console.log("Canvas ou overlay não disponível para inicialização");
@@ -262,12 +281,17 @@ const ScratchGame = () => {
     lastProgressCheck.current = 0;
     
     console.log("Canvas inicializado para rodada", currentRound);
-  };
+  }, [responsiveSizes.canvasSize, currentRound]);
 
   // Função para iniciar o jogo
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     if (!overlayLoaded) {
       console.log("Aguardando overlay carregar...");
+      return;
+    }
+    
+    if (isInitializing) {
+      console.log("Aguardando inicialização...");
       return;
     }
     
@@ -277,28 +301,34 @@ const ScratchGame = () => {
     // Depois iniciar o jogo
     setGameStarted(true);
     setIsCanvasBlocked(false);
-  };
+    
+    console.log("Jogo iniciado para rodada", currentRound);
+  }, [overlayLoaded, isInitializing, initializeCanvas, currentRound]);
 
   // Função de raspagem
-  const handleScratchStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!gameStarted || isCanvasBlocked || attempts <= 0 || currentRound > 2 || isScratching || showWinModal || showLoseModal || !overlayLoaded) {
-      console.log("Condição de raspagem não atendida");
+  const handleScratchStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (!gameStarted || isCanvasBlocked || attempts <= 0 || currentRound > 2 || 
+        isScratching || showWinModal || showLoseModal || !overlayLoaded) {
+      console.log("Condição de raspagem não atendida:", {
+        gameStarted, isCanvasBlocked, attempts, currentRound,
+        isScratching, showWinModal, showLoseModal, overlayLoaded
+      });
       return;
     }
     
     e.preventDefault();
     setIsScratching(true);
     scratchAtPosition(e);
-  };
+  }, [gameStarted, isCanvasBlocked, attempts, currentRound, isScratching, showWinModal, showLoseModal, overlayLoaded]);
 
-  const handleScratchMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleScratchMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!gameStarted || isCanvasBlocked || !isScratching || showWinModal || showLoseModal || !overlayLoaded) return;
     
     e.preventDefault();
     scratchAtPosition(e);
-  };
+  }, [gameStarted, isCanvasBlocked, isScratching, showWinModal, showLoseModal, overlayLoaded]);
 
-  const handleScratchEnd = () => {
+  const handleScratchEnd = useCallback(() => {
     if (!gameStarted || isCanvasBlocked) return;
     
     setIsScratching(false);
@@ -310,9 +340,9 @@ const ScratchGame = () => {
         checkWinCondition();
       }
     }, 100);
-  };
+  }, [gameStarted, isCanvasBlocked, scratchProgress]);
 
-  const scratchAtPosition = (e: React.MouseEvent | React.TouchEvent) => {
+  const scratchAtPosition = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas || !overlayImageRef.current) {
       console.log("Canvas ou overlay não disponível para raspagem");
@@ -358,10 +388,10 @@ const ScratchGame = () => {
       calculateProgress();
       lastProgressCheck.current = now;
     }
-  };
+  }, [responsiveSizes.canvasSize]);
 
   // Calcular progresso da raspagem
-  const calculateProgress = () => {
+  const calculateProgress = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -390,9 +420,9 @@ const ScratchGame = () => {
         checkWinCondition();
       }, 200);
     }
-  };
+  }, []);
 
-  const checkWinCondition = () => {
+  const checkWinCondition = useCallback(() => {
     if (scratchProgress >= 70) {
       if (currentRound === 2) {
         // Terceira rodada - Ganha
@@ -402,67 +432,43 @@ const ScratchGame = () => {
         handleLose();
       }
     }
-  };
+  }, [scratchProgress, currentRound]);
 
-  const handleWin = () => {
+  const handleWin = useCallback(() => {
     setShowConfetti(true);
     
     setTimeout(() => {
       setShowWinModal(true);
       setShowConfetti(false);
     }, 1500);
-  };
+  }, []);
 
-  const handleLose = () => {
+  const handleLose = useCallback(() => {
     setTimeout(() => {
       setShowLoseModal(true);
     }, 500);
-  };
+  }, []);
 
-  const handleCloseLoseModal = () => {
+  const handleCloseLoseModal = useCallback(() => {
     setShowLoseModal(false);
-    
-    // Atualizar tentativas
-    const newAttempts = attempts - 1;
-    setAttempts(newAttempts);
-    
-    // Avançar para próxima rodada apenas se ainda houver tentativas
-    if (newAttempts > 0) {
-      const nextRound = currentRound + 1;
-      setCurrentRound(nextRound);
-    }
-  };
+    advanceRound();
+  }, [advanceRound]);
 
-  const handlePlayAgainFromLose = () => {
+  const handlePlayAgainFromLose = useCallback(() => {
     setShowLoseModal(false);
-    
-    // Atualizar tentativas
-    const newAttempts = attempts - 1;
-    setAttempts(newAttempts);
-    
-    if (newAttempts > 0) {
-      const nextRound = currentRound + 1;
-      setCurrentRound(nextRound);
-      
-      // Marcar para iniciar automaticamente quando o overlay carregar
-      setShouldAutoStart(true);
-    } else {
-      // Se não houver mais tentativas, resetar para estado inicial
-      setGameStarted(false);
-      setIsCanvasBlocked(true);
-      setScratchProgress(0);
-    }
-  };
+    advanceRound();
+    setShouldAutoStart(true);
+  }, [advanceRound]);
 
-  const handleConfirmWin = () => {
+  const handleConfirmWin = useCallback(() => {
     setShowWinModal(false);
     setAttempts(prev => prev - 1);
     
     // Redirecionar para checkout após ganhar na terceira rodada
     navigate('/checkout');
-  };
+  }, [navigate]);
 
-  const handlePlayAgainFromWin = () => {
+  const handlePlayAgainFromWin = useCallback(() => {
     setShowWinModal(false);
     setGameStarted(false);
     setIsCanvasBlocked(true);
@@ -474,7 +480,7 @@ const ScratchGame = () => {
         initializeCanvas();
       }
     }, 100);
-  };
+  }, [overlayLoaded, initializeCanvas]);
 
   // Debug: Logar estado atual
   useEffect(() => {
@@ -485,9 +491,10 @@ const ScratchGame = () => {
       currentRound,
       attempts,
       scratchProgress,
-      shouldAutoStart
+      shouldAutoStart,
+      isInitializing
     });
-  }, [gameStarted, isCanvasBlocked, overlayLoaded, currentRound, attempts, scratchProgress, shouldAutoStart]);
+  }, [gameStarted, isCanvasBlocked, overlayLoaded, currentRound, attempts, scratchProgress, shouldAutoStart, isInitializing]);
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -532,45 +539,58 @@ const ScratchGame = () => {
                 height: responsiveSizes.canvasSize 
               }}
             >
-              {/* Grid de imagens por baixo */}
-              <div className="absolute inset-0 grid grid-cols-3 gap-1 p-2">
-                {scratchCards.map((image, index) => (
-                  <div key={index} className="bg-[#c3ffff]/20 rounded-lg flex items-center justify-center p-1">
-                    <img 
-                      src={image} 
-                      alt={`Prêmio ${index + 1}`}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        console.error(`Erro ao carregar imagem: ${image}`);
-                        e.currentTarget.src = "/images/1.png"; // Fallback
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              {/* Grid de imagens por baixo - Só mostra quando overlay estiver carregado */}
+              {overlayLoaded ? (
+                <div className="absolute inset-0 grid grid-cols-3 gap-1 p-2">
+                  {scratchCards.map((image, index) => (
+                    <div key={index} className="bg-[#c3ffff]/20 rounded-lg flex items-center justify-center p-1">
+                      <img 
+                        src={image} 
+                        alt={`Prêmio ${index + 1}`}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          console.error(`Erro ao carregar imagem: ${image}`);
+                          e.currentTarget.src = "/images/1.png"; // Fallback
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Placeholder enquanto overlay não carrega
+                <div className="absolute inset-0 grid grid-cols-3 gap-1 p-2">
+                  {Array.from({ length: 9 }).map((_, index) => (
+                    <div key={index} className="bg-gray-300 animate-pulse rounded-lg flex items-center justify-center p-1">
+                      <div className="w-full h-full bg-gray-400 rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              )}
               
               {/* Canvas para raspagem com overlay */}
-              <canvas
-                ref={canvasRef}
-                width={responsiveSizes.canvasSize}
-                height={responsiveSizes.canvasSize}
-                className={`absolute inset-0 w-full h-full ${
-                  isCanvasBlocked ? 'cursor-not-allowed' : 'cursor-crosshair'
-                } touch-none`}
-                onMouseDown={handleScratchStart}
-                onMouseMove={handleScratchMove}
-                onMouseUp={handleScratchEnd}
-                onMouseLeave={handleScratchEnd}
-                onTouchStart={handleScratchStart}
-                onTouchMove={handleScratchMove}
-                onTouchEnd={handleScratchEnd}
-                style={{ touchAction: 'none' }}
-              />
+              {overlayLoaded && (
+                <canvas
+                  ref={canvasRef}
+                  width={responsiveSizes.canvasSize}
+                  height={responsiveSizes.canvasSize}
+                  className={`absolute inset-0 w-full h-full ${
+                    isCanvasBlocked ? 'cursor-not-allowed' : 'cursor-crosshair'
+                  } touch-none`}
+                  onMouseDown={handleScratchStart}
+                  onMouseMove={handleScratchMove}
+                  onMouseUp={handleScratchEnd}
+                  onMouseLeave={handleScratchEnd}
+                  onTouchStart={handleScratchStart}
+                  onTouchMove={handleScratchMove}
+                  onTouchEnd={handleScratchEnd}
+                  style={{ touchAction: 'none' }}
+                />
+              )}
 
               {/* Overlay de bloqueio quando não iniciado */}
               {isCanvasBlocked && overlayLoaded && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-xl">
-                  <div className="w-12 h-12 rounded-full bg-[#ff3c5c] flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-full bg-[#ff3c5c] flex items-center justify-center mb-3 animate-pulse">
                     <svg 
                       width="24" 
                       height="24" 
@@ -590,19 +610,24 @@ const ScratchGame = () => {
               )}
 
               {/* Indicador de carregamento */}
-              {!overlayLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-xl">
-                  <div className="text-white text-sm">Carregando overlay...</div>
+              {!overlayLoaded || isInitializing ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl">
+                  <div className="text-center">
+                    <div className="loader mb-3"></div>
+                    <p className="text-white text-sm font-medium">
+                      {isInitializing ? "Preparando jogo..." : "Carregando overlay..."}
+                    </p>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 
-          {/* Botão Jogar Agora - Agora não desaparece, apenas muda de estado */}
+          {/* Botão Jogar Agora */}
           <div className="max-w-md mx-auto px-4 mb-6">
             <Button
               onClick={handleStartGame}
-              disabled={!overlayLoaded || gameStarted || attempts <= 0}
+              disabled={!overlayLoaded || gameStarted || attempts <= 0 || isInitializing}
               className={`
                 w-full
                 ${gameStarted ? 'bg-[#a82c44] hover:bg-[#a82c44] cursor-not-allowed' : 'bg-[#ff3c5c] hover:bg-[#ff2a4a]'}
@@ -615,7 +640,7 @@ const ScratchGame = () => {
                 ${gameStarted ? 'shadow-none opacity-70' : 'shadow-red-500/40 hover:shadow-red-500/60'}
                 transition-all
                 duration-200
-                ${(!overlayLoaded || attempts <= 0) ? 'cursor-not-allowed opacity-50' : ''}
+                ${(!overlayLoaded || attempts <= 0 || isInitializing) ? 'cursor-not-allowed opacity-50' : ''}
                 relative
                 overflow-hidden
                 border-0
@@ -623,9 +648,20 @@ const ScratchGame = () => {
               `}
             >
               <div className="flex items-center justify-center gap-3">
-                {gameStarted ? (
+                {!overlayLoaded || isInitializing ? (
                   <>
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M17.1668 11.1733C17.1668 12.5307 17.1668 9.81592 17.1668 11.1733ZM17.1668 11.1733C17.1668 12.5307 17.1668 13.8881 17.1668 13.8881M17.1668 11.1733C17.1668 9.81592 20.0001 9.81592 20.0001 11.1733C20.0001 12.5307 20.0001 12.8701 20.0001 18.2997C20.0001 23.7294 7.85591 23.7756 5.68023 18.2997C4.87315 16.2684 5.01308 16.7027 4.2713 14.941C3.52953 13.1794 5.97114 12.1286 6.9472 13.8881C7.92326 15.6477 8.66677 18.4383 8.66677 17.2817C8.66677 16.125 8.66677 12.5307 8.66677 11.1733C8.66677 9.81592 8.66677 5.37546 8.66677 4.01805C8.66677 2.66065 11.5001 2.66065 11.5001 4.01805M17.1668 11.1733C17.1668 9.81592 14.3239 9.81592 14.3334 11.1733M14.3334 11.1733C14.3334 9.81592 11.5001 9.81592 11.5001 11.1733C11.5001 11.4976 11.5001 3.66565 11.5001 4.01805M14.3334 11.1733C14.3334 11.4976 14.3334 10.8209 14.3334 11.1733ZM14.3334 11.1733C14.3477 13.2094 14.3334 13.8881 14.3334 13.8881M11.5001 13.8881C11.5001 13.8881 11.5001 7.41019 11.5001 4.01805" stroke="#ffffff" stroke-width="1.75" stroke-linecap="round"></path> </g></svg>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Carregando...</span>
+                  </>
+                ) : gameStarted ? (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                      <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                      <g id="SVGRepo_iconCarrier"> 
+                        <path d="M17.1668 11.1733C17.1668 12.5307 17.1668 9.81592 17.1668 11.1733ZM17.1668 11.1733C17.1668 12.5307 17.1668 13.8881 17.1668 13.8881M17.1668 11.1733C17.1668 9.81592 20.0001 9.81592 20.0001 11.1733C20.0001 12.5307 20.0001 12.8701 20.0001 18.2997C20.0001 23.7294 7.85591 23.7756 5.68023 18.2997C4.87315 16.2684 5.01308 16.7027 4.2713 14.941C3.52953 13.1794 5.97114 12.1286 6.9472 13.8881C7.92326 15.6477 8.66677 18.4383 8.66677 17.2817C8.66677 16.125 8.66677 12.5307 8.66677 11.1733C8.66677 9.81592 8.66677 5.37546 8.66677 4.01805C8.66677 2.66065 11.5001 2.66065 11.5001 4.01805M17.1668 11.1733C17.1668 9.81592 14.3239 9.81592 14.3334 11.1733M14.3334 11.1733C14.3334 9.81592 11.5001 9.81592 11.5001 11.1733C11.5001 11.4976 11.5001 3.66565 11.5001 4.01805M14.3334 11.1733C14.3334 11.4976 14.3334 10.8209 14.3334 11.1733ZM14.3334 11.1733C14.3477 13.2094 14.3334 13.8881 14.3334 13.8881M11.5001 13.8881C11.5001 13.8881 11.5001 7.41019 11.5001 4.01805" stroke="#ffffff" strokeWidth="1.75" strokeLinecap="round"></path> 
+                      </g>
+                    </svg>
                     <span>Raspe Aqui</span>
                   </>
                 ) : (
@@ -642,7 +678,7 @@ const ScratchGame = () => {
                         transform="translate(-291 -3606)"
                       />
                     </svg>
-                    <span>{!overlayLoaded ? 'Carregando...' : 'Jogar Agora'}</span>
+                    <span>Jogar Agora</span>
                   </>
                 )}
               </div>
@@ -687,7 +723,8 @@ const ScratchGame = () => {
             </div>
           </div>
 
-            <div className="max-w-md mx-auto px-4 mb-8">
+          {/* Grid de Prêmios */}
+          <div className="max-w-md mx-auto px-4 mb-8">
             <div className="relative bg-white rounded-lg shadow-lg min-h-[550px] flex flex-col overflow-hidden">
               
               {/* Borda esquerda azul */}
@@ -723,11 +760,19 @@ const ScratchGame = () => {
                       key={prize.id}
                       className="bg-gray-50 rounded-lg p-3 flex flex-col items-center justify-center border border-gray-200 hover:border-[#1af9f8] transition-all"
                     >
-                      <img
-                        src={prize.image}
-                        alt={prize.name}
-                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain mb-2"
-                      />
+                      {overlayLoaded ? (
+                        <img
+                          src={prize.image}
+                          alt={prize.name}
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-contain mb-2"
+                          onError={(e) => {
+                            console.error(`Erro ao carregar prêmio: ${prize.image}`);
+                            e.currentTarget.src = "/images/1.png";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-300 animate-pulse rounded-lg mb-2"></div>
+                      )}
                       <p
                         className="text-gray-800 text-center font-medium leading-tight"
                         style={{ fontSize: responsiveSizes.fontSize.small }}
@@ -740,8 +785,6 @@ const ScratchGame = () => {
               </div>
             </div>
           </div>
-
-          
         </div>
 
         {/* Modal de Perda */}
@@ -815,7 +858,6 @@ const ScratchGame = () => {
       </div>
 
       <style>{`
-
         @media (max-width: 320px) {
           .max-w-md {
             max-width: 95%;
@@ -844,7 +886,23 @@ const ScratchGame = () => {
           background: linear-gradient(to bottom, #ff2a4a, #0bd4d3);
         }
 
-        /* Animação de pulsação para o ícone */
+        /* Loader para overlay */
+        .loader {
+          border: 4px solid rgba(255, 255, 255, 0.3);
+          border-top: 4px solid #ff3c5c;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 1s linear infinite;
+          margin: 0 auto;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Animação de pulsação */
         @keyframes pulse {
           0%, 100% {
             opacity: 1;
@@ -858,6 +916,20 @@ const ScratchGame = () => {
 
         .animate-pulse {
           animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Animação de fade-in */
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-in-out;
         }
 
         /* Efeito de desabilitado */
