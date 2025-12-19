@@ -917,10 +917,10 @@ const ScratchGame = () => {
                   </div>
                   
                   <img 
-                    src="/images/jbl.png" 
-                    alt="JBL Boombox"
-                    className="w-28 h-28 mx-auto mb-6 object-contain"
-                  />
+  src="/images/jbl.png" 
+  alt="JBL Boombox"
+  className="w-[206px] h-[126px] mx-auto mb-6 "
+/>
                 </div>
 
                 <div className="space-y-3">

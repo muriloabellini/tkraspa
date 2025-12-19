@@ -14,7 +14,7 @@ const Landing = () => {
       <div className="min-h-screen flex flex-col ">
        
         <main 
-          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-120px] pb-8 relative"
+          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-100px] pb-8 relative"
           style={{
             backgroundImage: `url(${fundoImg})`,
             backgroundSize: 'cover',
