@@ -1,10 +1,43 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, Star, Tag, TruckIcon, CreditCard } from 'lucide-react';
 
+// Tipos para os parâmetros UTM
+interface UTMParams {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+  gclid?: string;
+  fbclid?: string;
+  ttclid?: string;
+  [key: string]: string | undefined;
+}
+
 function Checkout() {
   const [timeLeft, setTimeLeft] = useState(5 * 60); // 5:00
+  const [utmParams, setUtmParams] = useState<UTMParams | null>(null);
 
+  // Carregar parâmetros UTM do localStorage
   useEffect(() => {
+    const loadUTMParams = (): UTMParams | null => {
+      try {
+        const stored = localStorage.getItem('utm_params');
+        return stored ? JSON.parse(stored) : null;
+      } catch (error) {
+        console.error('Error loading UTM parameters:', error);
+        return null;
+      }
+    };
+
+    const params = loadUTMParams();
+    setUtmParams(params);
+    
+    if (params) {
+      console.log('UTM parameters loaded for checkout:', params);
+    }
+
+    // Timer para contagem regressiva
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) {
@@ -18,15 +51,108 @@ function Checkout() {
     return () => clearInterval(timer);
   }, []);
 
+  // Função para construir URL com UTM
+  const buildCheckoutURL = (baseURL: string): string => {
+    if (!utmParams || Object.keys(utmParams).length === 0) {
+      return baseURL;
+    }
+
+    try {
+      const url = new URL(baseURL);
+      
+      // Adicionar parâmetros UTM à URL
+      Object.entries(utmParams).forEach(([key, value]) => {
+        if (value && typeof value === 'string') {
+          url.searchParams.append(key, value);
+        }
+      });
+
+      // Adicionar parâmetros adicionais de tracking
+      url.searchParams.append('checkout_timestamp', new Date().toISOString());
+      url.searchParams.append('utm_landing', 'checkout_page');
+      
+      // Adicionar referência da raspadinha
+      const sessionId = localStorage.getItem('scratch_session_id') || 
+                       Date.now().toString();
+      url.searchParams.append('session_id', sessionId);
+
+      return url.toString();
+    } catch (error) {
+      console.error('Error building checkout URL:', error);
+      return baseURL;
+    }
+  };
+
+  // Função para salvar dados do checkout no localStorage
+  const saveCheckoutData = () => {
+    try {
+      const checkoutData = {
+        timestamp: new Date().toISOString(),
+        product: 'Caixa De Som Boombox 3 Bluetooth',
+        original_price: 2849.05,
+        discount_price: 0,
+        utm_params: utmParams,
+        session_id: localStorage.getItem('scratch_session_id') || Date.now().toString()
+      };
+
+      localStorage.setItem('checkout_attempt', JSON.stringify(checkoutData));
+      
+      // Adicionar ao histórico de checkouts
+      const checkoutHistory = JSON.parse(localStorage.getItem('checkout_history') || '[]');
+      checkoutHistory.unshift(checkoutData);
+      
+      if (checkoutHistory.length > 5) {
+        checkoutHistory.pop();
+      }
+      
+      localStorage.setItem('checkout_history', JSON.stringify(checkoutHistory));
+      
+      console.log('Checkout data saved:', checkoutData);
+    } catch (error) {
+      console.error('Error saving checkout data:', error);
+    }
+  };
+
+  const handlePayment = () => {
+    // URL base do checkout (substitua pela sua URL real)
+    const baseCheckoutURL = 'https://seucheckout.com';
+    
+    // Salvar dados do checkout
+    saveCheckoutData();
+    
+    // Construir URL com parâmetros UTM
+    const checkoutURL = buildCheckoutURL(baseCheckoutURL);
+    
+    // Registrar evento de clique no checkout
+    try {
+      if ('gtag' in window) {
+        (window as any).gtag('event', 'begin_checkout', {
+          currency: 'BRL',
+          value: 0,
+          items: [{
+            item_id: 'boombox_3',
+            item_name: 'Caixa De Som Boombox 3 Bluetooth',
+            price: 2849.05,
+            discount: 2849.05,
+            quantity: 1
+          }],
+          ...utmParams
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking checkout event:', error);
+    }
+
+    // Redirecionar para checkout
+    console.log('Redirecting to checkout with URL:', checkoutURL);
+    window.location.href = checkoutURL;
+  };
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  const handlePayment = () => {
-    window.location.href = 'https://seucheckout.com';
   };
 
   return (
@@ -60,18 +186,19 @@ function Checkout() {
             </span>
           </div>
           
-   <div
-  className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-2"
-  style={{
-    width: '100vw',
-    height: '15px',
-    backgroundImage: "url('/images/gradi.jpg')",
-    backgroundRepeat: 'repeat-x',
-    backgroundSize: 'auto 100%',
-    backgroundPosition: 'center',
-  }}
-/>
+          <div
+            className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-2"
+            style={{
+              width: '100vw',
+              height: '15px',
+              backgroundImage: "url('/images/gradi.jpg')",
+              backgroundRepeat: 'repeat-x',
+              backgroundSize: 'auto 100%',
+              backgroundPosition: 'center',
+            }}
+          />
 
+  
         </header>
 
         {/* Produto - Raspadinha */}
@@ -303,22 +430,22 @@ function Checkout() {
           </div>
         </div>
 
-        {/* Botão principal - FIXADO no final */}
-       
-          <button
-            onClick={handlePayment}
-            className="w-full bg-[#F43F5E] text-white font-bold py-3 rounded-xl shadow-lg hover:opacity-90 transition-opacity"
-            style={{ 
-              fontSize: '15px',
-              fontFamily: "'TikTok Sans', sans-serif",
-              fontWeight: 700
-            }}
-          >
-            Fazer pedido
-            <div className="text-xs font-normal text-pink-100 mt-1">
-              Seu prêmio se expira em {formatTime(timeLeft)}
-            </div>
-          </button>
+        {/* Botão principal */}
+        <button
+          onClick={handlePayment}
+          className="w-full bg-[#F43F5E] text-white font-bold py-3 rounded-xl shadow-lg hover:opacity-90 transition-opacity mt-4"
+          style={{ 
+            fontSize: '15px',
+            fontFamily: "'TikTok Sans', sans-serif",
+            fontWeight: 700
+          }}
+        >
+          Fazer pedido
+          <div className="text-xs font-normal text-pink-100 mt-1">
+            Seu prêmio se expira em {formatTime(timeLeft)}
+          </div>
+        </button>
+
     
       </main>
     </div>
