@@ -115,7 +115,7 @@ function Checkout() {
 
   const handlePayment = () => {
     // URL base do checkout (substitua pela sua URL real)
-    const baseCheckoutURL = 'https://seucheckout.com';
+    const baseCheckoutURL = 'https://pay.buscabuscaabrasoficial.shop/lDW0ZaJnAmRGN7E';
     
     // Salvar dados do checkout
     saveCheckoutData();
