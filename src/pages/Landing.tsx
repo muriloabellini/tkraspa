@@ -145,7 +145,7 @@ const Landing = () => {
       <Confetti />
       <div className="min-h-screen flex flex-col">
         <main 
-          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-100px] pb-8 relative"
+          className="flex-1 flex flex-col items-center justify-center px-4 mt-[-80px] pb-8 relative"
           style={{
             backgroundImage: `url(${fundoImg})`,
             backgroundSize: 'cover',
@@ -170,7 +170,7 @@ const Landing = () => {
               <img 
                 src={caixaPremiadaImg}
                 alt="Caixa Premiada TikTok Shop"
-                className="w-64 md:w-72 h-auto drop-shadow-2xl animate-float"
+                className="w-52 md:w-60 h-auto drop-shadow-2xl animate-float"
               />
             </div>
 
