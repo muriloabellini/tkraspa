@@ -341,8 +341,8 @@ function Checkout() {
                   </span>
                 </div>
                 <span
-                  className="px-2 py-0.5 bg-pink-100 text-[#E11D48] text-xs font-extrabold rounded "
-                  style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '15px' }}
+                  className="px-3 py-0.5 bg-pink-100 text-[#E11D48] text-xs font-extrabold rounded "
+                  style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: '13px' }}
                 >
                   - 100%
                 </span>
@@ -423,7 +423,7 @@ function Checkout() {
         </div>
 
         {/* Frete */}
-       <div className="flex mb-2 items-center gap-2  p-2 rounded-lg flex-shrink-0 ml-10">
+       <div className="flex  items-center gap-2  p-2 rounded-lg flex-shrink-0 ml-10">
           <TruckIcon className="w-4 h-4 text-red-500" />
           <div className="flex items-center text-xs text-gray-700 ">
             Calcule o seu frete clicando no botão abaixo
